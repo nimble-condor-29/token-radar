@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Token Radar — pre-token protocols ranked by implied value</title>
+<link rel="stylesheet" href="app.css">
+</head>
+<body>
+<header class="hero">
+  <div class="hero-top">
+    <div>
+      <p class="eyebrow">TOKEN RADAR &middot; DEFI LLAMA SNAPSHOT <span id="asof"></span></p>
+      <h1>Which launch is worth farming next?</h1>
+      <p class="lede">Every protocol below <strong>records no token</strong> in the snapshot. Each is ranked by what its
+      launch would be worth if its record stayed as it is &mdash; from its own TVL, 7-day growth, age with no token,
+      chain reach and category &mdash; with a concrete farm plan per protocol. Protocols whose token already trades are
+      kept apart at the bottom, never ranked.</p>
+    </div>
+    <div class="hero-note">
+      <p><strong>Implied value is this radar&rsquo;s own claim.</strong> It is not a prediction that a token
+      will be issued, or when. &ldquo;Records no token&rdquo; means the snapshot carries none &mdash; it is not proof
+      a protocol has none.</p>
+    </div>
+  </div>
+  <div class="stats" id="stats"></div>
+  <div class="topten">
+    <h2>Top 10 by implied value</h2>
+    <div id="top10"></div>
+  </div>
+</header>
+
+<main>
+  <section class="controls" aria-label="Filter and sort">
+    <input id="q" type="search" placeholder="Search name or slug&hellip;" aria-label="Search protocols">
+    <select id="cat" aria-label="Category"><option value="">All categories</option></select>
+    <select id="chain" aria-label="Chain"><option value="">All chains</option></select>
+    <select id="sort" aria-label="Sort by">
+      <option value="implied">Sort: implied value &darr;</option>
+      <option value="tvl">Sort: TVL &darr;</option>
+      <option value="growth">Sort: 7-day growth &darr;</option>
+      <option value="age">Sort: age &darr;</option>
+      <option value="name">Sort: name A&ndash;Z</option>
+    </select>
+    <label class="check"><input id="watch" type="checkbox"> Watchlist only</label>
+    <button id="reset" type="button">Reset</button>
+    <span class="count" id="count"></span>
+  </section>
+
+  <section id="detail" class="detail" hidden></section>
+
+  <section class="board-wrap">
+    <table class="board" id="board">
+      <thead><tr>
+        <th data-k="rank">#</th><th data-k="name">Protocol</th><th data-k="category">Category</th>
+        <th data-k="chains">Chains</th><th data-k="tvl">TVL</th><th data-k="growth">7d</th>
+        <th data-k="age">Age</th><th data-k="implied">Implied value</th><th>Farm</th>
+      </tr></thead>
+      <tbody id="rows"></tbody>
+    </table>
+    <p class="board-foot" id="boardfoot"></p>
+  </section>
+
+  <section class="live">
+    <h2>Already trading &mdash; set aside, not ranked</h2>
+    <p>These protocols record a token that already trades, so the board shows the market&rsquo;s own value for them,
+    not a model&rsquo;s. They are here so a reader can see the separation, not to be farmed as launches.</p>
+    <table class="board live-table"><thead><tr>
+      <th>Protocol</th><th>Category</th><th>Chains</th><th>TVL</th><th>Market cap</th><th>7d</th>
+    </tr></thead><tbody id="live"></tbody></table>
+  </section>
+
+  <section class="method">
+    <h2>How the radar scores &mdash; the model, in full</h2>
+    <p><code>impliedValue()</code> in <code>lib/model.ts</code> scores every protocol the same way, from the snapshot
+    alone &mdash; no name is ever special-cased:</p>
+    <p class="formula">implied = TVL &times; 0.30 &times; growth &times; maturity &times; breadth &times; category</p>
+    <ul>
+      <li><strong>growth</strong> = 1 + clamp(7-day change, &minus;50%, +100%) &divide; 100 &times; 0.9</li>
+      <li><strong>maturity</strong> = 0.70 + 0.30 &times; min(age in days, 1460) &divide; 1460 &mdash; longer with no token, more pent-up value (unknown age counts as 365 days)</li>
+      <li><strong>breadth</strong> = 1 + 0.04 &times; min(chains &minus; 1, 8) &mdash; multi-chain reach</li>
+      <li><strong>category</strong> = 1.12 risk curators &amp; capital allocators, 1.08 lending &amp; CDP, 1.06 DEX &amp; perps, 1.05 yield &amp; RWA, 0.95 stablecoins, 1.00 otherwise</li>
+    </ul>
+    <p>Coverage: the board holds all <span id="wl"></span> watchlist protocols plus every other rankable pre-token
+    protocol below the $50M floor. Wrapped, staked, bridged and exchange products are excluded &mdash; they are a token
+    that already trades in another form. Farm plans come from <code>farmSteps()</code>: the protocol&rsquo;s own category,
+    chains, TVL tier and age set the action, the capital, the hold and the cost.</p>
+  </section>
+</main>
+<footer><p>Token Radar &middot; snapshot <span id="src"></span> &middot; built by an agent for the make.fun token-radar-01 bounty.</p></footer>
+<script src="../data.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
